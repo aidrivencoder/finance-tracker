@@ -7,6 +7,9 @@ import { Summary } from './components/Summary';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   loadTransactions,
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
   exportToCSV
 } from './lib/storage';
 
@@ -19,39 +22,28 @@ export default function App() {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['transactions'],
-    queryFn: loadTransactions
+    queryFn: () => loadTransactions()
   });
 
   const addTransactionMutation = useMutation({
-    mutationFn: async (transaction: Transaction) => {
-      const newTransactions = [...transactions, transaction];
-      localStorage.setItem('transactions', JSON.stringify(newTransactions));
-      return transaction;
-    },
+    mutationFn: addTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      setIsAddingTransaction(false);
     }
   });
 
   const updateTransactionMutation = useMutation({
-    mutationFn: async (transaction: Transaction) => {
-      const newTransactions = transactions.map(t => 
-        t.id === transaction.id ? transaction : t
-      );
-      localStorage.setItem('transactions', JSON.stringify(newTransactions));
-      return transaction;
-    },
+    mutationFn: (transaction: Transaction) => 
+      updateTransaction(transaction.id, transaction),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      setEditingTransaction(null);
     }
   });
 
   const deleteTransactionMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const newTransactions = transactions.filter(t => t.id !== id);
-      localStorage.setItem('transactions', JSON.stringify(newTransactions));
-      return id;
-    },
+    mutationFn: deleteTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     }

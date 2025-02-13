@@ -2,41 +2,40 @@ import { Transaction } from '@/types';
 
 const STORAGE_KEY = 'finance-tracker-data';
 
-export function saveTransactions(transactions: Transaction[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+export function saveTransactions(transactions: Transaction[]): Promise<void> {
+  return Promise.resolve(localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)));
 }
 
-export function loadTransactions(): Transaction[] {
+export function loadTransactions(): Promise<Transaction[]> {
   const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) return [];
-  return JSON.parse(data);
+  return Promise.resolve(data ? JSON.parse(data) : []);
 }
 
-export function addTransaction(transaction: Transaction): Transaction[] {
-  const transactions = loadTransactions();
+export async function addTransaction(transaction: Transaction): Promise<Transaction> {
+  const transactions = await loadTransactions();
   const newTransactions = [...transactions, transaction];
-  saveTransactions(newTransactions);
-  return newTransactions;
+  await saveTransactions(newTransactions);
+  return transaction;
 }
 
-export function updateTransaction(id: string, updatedTransaction: Transaction): Transaction[] {
-  const transactions = loadTransactions();
+export async function updateTransaction(id: string, updatedTransaction: Transaction): Promise<Transaction> {
+  const transactions = await loadTransactions();
   const newTransactions = transactions.map(t => 
     t.id === id ? updatedTransaction : t
   );
-  saveTransactions(newTransactions);
-  return newTransactions;
+  await saveTransactions(newTransactions);
+  return updatedTransaction;
 }
 
-export function deleteTransaction(id: string): Transaction[] {
-  const transactions = loadTransactions();
+export async function deleteTransaction(id: string): Promise<string> {
+  const transactions = await loadTransactions();
   const newTransactions = transactions.filter(t => t.id !== id);
-  saveTransactions(newTransactions);
-  return newTransactions;
+  await saveTransactions(newTransactions);
+  return id;
 }
 
-export function exportToCSV(): void {
-  const transactions = loadTransactions();
+export async function exportToCSV(): Promise<void> {
+  const transactions = await loadTransactions();
   const csvContent = [
     ['Date', 'Type', 'Category', 'Amount', 'Description'].join(','),
     ...transactions.map(t => [

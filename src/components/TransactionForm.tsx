@@ -5,8 +5,8 @@ import { Transaction, TransactionType, EXPENSE_CATEGORIES, INCOME_CATEGORIES } f
 
 const schema = z.object({
   type: z.enum(['income', 'expense']),
-  category: z.string(),
-  amount: z.number().positive(),
+  category: z.string().min(1, "Category is required"),
+  amount: z.coerce.number().positive("Amount must be positive"),
   description: z.string().min(1),
   date: z.string()
 });
@@ -36,7 +36,7 @@ export function TransactionForm({ onSubmit, initialData }: Props) {
       id: initialData?.id || crypto.randomUUID()
     });
   };
-
+  
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <div className="flex gap-4">
@@ -82,11 +82,11 @@ export function TransactionForm({ onSubmit, initialData }: Props) {
           type="number"
           step="0.01"
           placeholder="Amount"
-          {...register('amount', { valueAsNumber: true })}
+          {...register('amount')}
           className="w-full p-2 border rounded-lg"
         />
         {errors.amount && (
-          <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>
+          <p className="text-red-500 text-sm mt-1">{errors.amount.message?.toString()}</p>
         )}
       </div>
 
