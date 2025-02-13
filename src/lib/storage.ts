@@ -1,4 +1,4 @@
-import { Transaction, TransactionType } from '@/types';
+import { Transaction } from '@/types';
 
 const STORAGE_KEY = 'finance-tracker-data';
 

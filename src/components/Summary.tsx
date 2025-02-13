@@ -1,4 +1,3 @@
-import React from 'react';
 import { Transaction, TimeRange } from '@/types';
 import {
   BarChart,
@@ -21,7 +20,7 @@ interface Props {
 
 const COLORS = ['#10B981', '#EF4444', '#F59E0B', '#6366F1'];
 
-export function Summary({ transactions, timeRange }: Props) {
+export function Summary({ transactions }: Props) {
   const income = transactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0);
@@ -134,7 +133,7 @@ export function Summary({ transactions, timeRange }: Props) {
                 paddingAngle={5}
                 dataKey="value"
               >
-                {pieChartData.map((entry, index) => (
+                {pieChartData.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

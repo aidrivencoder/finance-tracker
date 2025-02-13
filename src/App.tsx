@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Transaction, TimeRange } from './types';
 import { TransactionForm } from './components/TransactionForm';
@@ -7,9 +7,6 @@ import { Summary } from './components/Summary';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   loadTransactions,
-  addTransaction,
-  updateTransaction,
-  deleteTransaction,
   exportToCSV
 } from './lib/storage';
 
@@ -24,24 +21,36 @@ export default function App() {
     queryFn: loadTransactions
   });
 
-  const addMutation = useMutation({
-    mutationFn: addTransaction,
+  const addTransactionMutation = useMutation({
+    mutationFn: async (transaction: Transaction) => {
+      const newTransactions = [...transactions, transaction];
+      localStorage.setItem('transactions', JSON.stringify(newTransactions));
+      return transaction;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      setIsAddingTransaction(false);
     }
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (transaction: Transaction) => updateTransaction(transaction.id, transaction),
+  const updateTransactionMutation = useMutation({
+    mutationFn: async (transaction: Transaction) => {
+      const newTransactions = transactions.map(t => 
+        t.id === transaction.id ? transaction : t
+      );
+      localStorage.setItem('transactions', JSON.stringify(newTransactions));
+      return transaction;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      setEditingTransaction(null);
     }
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteTransaction,
+  const deleteTransactionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const newTransactions = transactions.filter(t => t.id !== id);
+      localStorage.setItem('transactions', JSON.stringify(newTransactions));
+      return id;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     }
@@ -105,9 +114,9 @@ export default function App() {
                 <TransactionForm
                   onSubmit={(data) => {
                     if (editingTransaction) {
-                      updateMutation.mutate(data);
+                      updateTransactionMutation.mutate(data);
                     } else {
-                      addMutation.mutate(data);
+                      addTransactionMutation.mutate(data);
                     }
                   }}
                   initialData={editingTransaction || undefined}
@@ -136,7 +145,7 @@ export default function App() {
           <TransactionList
             transactions={transactions}
             onEdit={setEditingTransaction}
-            onDelete={(id) => deleteMutation.mutate(id)}
+            onDelete={(id) => deleteTransactionMutation.mutate(id)}
           />
         </motion.div>
       </div>

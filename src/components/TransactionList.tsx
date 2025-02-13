@@ -1,4 +1,3 @@
-import React from 'react';
 import { Transaction } from '@/types';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
