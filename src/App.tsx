@@ -14,6 +14,7 @@ export default function App() {
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('daily');
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
   const queryClient = useQueryClient();
 
   const { data: transactions = [] } = useQuery({
@@ -56,6 +57,11 @@ export default function App() {
     }
   });
 
+  const handleTransactionAction = () => {
+    setIsAddingTransaction(true);
+    setIsSummaryExpanded(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto p-6">
@@ -84,7 +90,7 @@ export default function App() {
               </button>
               {!isAddingTransaction && !editingTransaction && (
                 <button
-                  onClick={() => setIsAddingTransaction(true)}
+                  onClick={handleTransactionAction}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                 >
                   Add Transaction
@@ -94,10 +100,31 @@ export default function App() {
           </div>
         </motion.header>
 
-        <Summary
-          transactions={transactions}
-          timeRange={timeRange}
-        />
+        <div className="mb-6">
+          <button
+            onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          >
+            <span className="text-lg font-semibold">
+              {isSummaryExpanded ? '▼' : '▶'} Analytics
+            </span>
+          </button>
+          <AnimatePresence>
+            {isSummaryExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Summary
+                  transactions={transactions}
+                  timeRange={timeRange}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <AnimatePresence>
           {(isAddingTransaction || editingTransaction) && (
