@@ -1,5 +1,6 @@
 {
   "name": "finance-tracker",
+  "homepage": "https://aidrivencoder.github.io/finannce-tracker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
