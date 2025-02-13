@@ -4,6 +4,7 @@ import { Transaction, TimeRange } from './types';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { Summary } from './components/Summary';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   loadTransactions,
   addTransaction,
@@ -47,76 +48,97 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-lg mx-auto p-4">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Finance Tracker</h1>
-          <div className="flex justify-between items-center mt-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-5xl mx-auto p-6">
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Finance Tracker</h1>
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              className="p-2 border rounded-lg"
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
             </select>
-            <button
-              onClick={exportToCSV}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-            >
-              Export CSV
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={exportToCSV}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm"
+              >
+                Export CSV
+              </button>
+              {!isAddingTransaction && !editingTransaction && (
+                <button
+                  onClick={() => setIsAddingTransaction(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  Add Transaction
+                </button>
+              )}
+            </div>
           </div>
-        </header>
+        </motion.header>
 
         <Summary
           transactions={transactions}
           timeRange={timeRange}
         />
 
-        <div className="mt-8">
-          {!isAddingTransaction && !editingTransaction && (
-            <button
-              onClick={() => setIsAddingTransaction(true)}
-              className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600"
-            >
-              Add Transaction
-            </button>
-          )}
-
+        <AnimatePresence>
           {(isAddingTransaction || editingTransaction) && (
-            <div className="bg-white p-4 rounded-lg shadow mb-4">
-              <TransactionForm
-                onSubmit={(data) => {
-                  if (editingTransaction) {
-                    updateMutation.mutate(data);
-                  } else {
-                    addMutation.mutate(data);
-                  }
-                }}
-                initialData={editingTransaction || undefined}
-              />
-              <button
-                onClick={() => {
-                  setIsAddingTransaction(false);
-                  setEditingTransaction(null);
-                }}
-                className="w-full mt-2 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-8"
+            >
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h2 className="text-xl font-semibold mb-4">
+                  {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
+                </h2>
+                <TransactionForm
+                  onSubmit={(data) => {
+                    if (editingTransaction) {
+                      updateMutation.mutate(data);
+                    } else {
+                      addMutation.mutate(data);
+                    }
+                  }}
+                  initialData={editingTransaction || undefined}
+                />
+                <button
+                  onClick={() => {
+                    setIsAddingTransaction(false);
+                    setEditingTransaction(null);
+                  }}
+                  className="w-full mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
           )}
+        </AnimatePresence>
 
-          <div className="mt-6">
-            <TransactionList
-              transactions={transactions}
-              onEdit={setEditingTransaction}
-              onDelete={(id) => deleteMutation.mutate(id)}
-            />
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-8"
+        >
+          <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
+          <TransactionList
+            transactions={transactions}
+            onEdit={setEditingTransaction}
+            onDelete={(id) => deleteMutation.mutate(id)}
+          />
+        </motion.div>
       </div>
     </div>
   );
