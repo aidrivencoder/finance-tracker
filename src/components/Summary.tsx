@@ -94,11 +94,11 @@ export function Summary({ transactions }: Props) {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white p-6 rounded-xl shadow-lg h-80"
+          className="bg-white p-6 rounded-xl shadow-lg h-96"
         >
           <h3 className="text-lg font-semibold mb-4">Income vs Expenses</h3>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barChartData}>
+            <BarChart data={barChartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
